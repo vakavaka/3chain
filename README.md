@@ -1,4 +1,12 @@
-3Chain
-===
+# Project Name
 
-3Chain is a toolkit for building plugin connecting the web3 world intergrated into your web3 chat.
+A comprehensive solution for crypto tracking and document management with integrated chat functionality.
+
+## 📋 Features
+
+- Cryptocurrency tracking and monitoring
+- Document indexing and management
+- Chat functionality
+- Utility tools for data processing
+
+## 🗂️ Project Structure
