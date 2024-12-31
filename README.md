@@ -12,6 +12,14 @@ A comprehensive solution for crypto tracking and document management with integr
 ## 🗂️ Project Structure
 
 ```
+├── crypto_tracker.py    # Cryptocurrency tracking functionality
+├── create_index.py      # Document indexing system
+├── chat.py             # Chat implementation
+├── add_document.py     # Document addition utilities
+├── utils.py            # Common utility functions
+├── .gitignore         # Git ignore configurations
+└── LICENSE            # Project license
+```
 
 ## 🐛 Known Issues and Bug Fixes
 
@@ -64,3 +72,10 @@ To ensure the stability of the project, please check the following common issues
 ## 🧪 Testing
 
 Run tests using:
+```bash
+python -m pytest tests/
+```
+
+## 📝 License
+
+This project is licensed under the terms of the LICENSE file included in the repository.
