@@ -1,3 +1,7 @@
+import os
+import logging
+from typing import Any, Optional
+from pathlib import Path
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.document_loaders import PyPDFLoader
@@ -5,6 +9,54 @@ from langchain.vectorstores import FAISS
 from glob import glob
 from tqdm import tqdm
 import yaml
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+def safe_path_join(*paths: str) -> str:
+    """Safely join paths with proper error handling."""
+    try:
+        return os.path.join(*paths)
+    except Exception as e:
+        logger.error(f"Error joining paths: {e}")
+        raise
+
+def validate_input(value: Any, expected_type: type) -> bool:
+    """Validate input type with proper error handling."""
+    try:
+        if not isinstance(value, expected_type):
+            raise TypeError(f"Expected {expected_type.__name__}, got {type(value).__name__}")
+        return True
+    except Exception as e:
+        logger.error(f"Input validation error: {e}")
+        return False
+
+def sanitize_filename(filename: str) -> str:
+    """Sanitize file names for security."""
+    try:
+        # Remove potentially dangerous characters
+        safe_chars = "".join(c for c in filename if c.isalnum() or c in "._- ")
+        return safe_chars.strip()
+    except Exception as e:
+        logger.error(f"Error sanitizing filename: {e}")
+        raise
+
+def validate_file_type(file_path: str, allowed_extensions: set) -> bool:
+    """Validate file type against allowed extensions."""
+    try:
+        ext = os.path.splitext(file_path)[1].lower()
+        return ext in allowed_extensions
+    except Exception as e:
+        logger.error(f"Error validating file type: {e}")
+        return False
 
 def load_config():
     with open('config.yaml', 'r') as file:

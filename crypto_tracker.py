@@ -1,51 +1,41 @@
+import secrets
+from cryptography.fernet import Fernet
+import logging
+from typing import Dict, Optional
 import requests
-from constants import CRYPTO_APIKEY
+from utils import validate_input
 
-API_KEY = CRYPTO_APIKEY
-BASE_URL = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
+logger = logging.getLogger(__name__)
 
-portfolio_cryptos = ['BTC', 'ETH', 'DOT', 'AXS', 'MATIC', 'GALA', 'ALU', 'PBR', 'UFO', 'SHIB', 'ARB', 'DERC', 'FTM', 'LTC', 'PHA']
+class CryptoTracker:
+    def __init__(self):
+        self.key = Fernet.generate_key()
+        self.cipher_suite = Fernet(self.key)
+        
+    def encrypt_data(self, data: str) -> bytes:
+        """Encrypt sensitive data."""
+        try:
+            return self.cipher_suite.encrypt(data.encode())
+        except Exception as e:
+            logger.error(f"Encryption error: {e}")
+            raise
 
-def get_crypto_data(symbol):
-    headers = {
-        'Accepts': 'application/json',
-        'X-CMC_PRO_API_KEY': API_KEY
-    }
+    def get_crypto_price(self, symbol: str) -> Optional[float]:
+        """Get cryptocurrency price with proper error handling and validation."""
+        try:
+            if not validate_input(symbol, str):
+                raise ValueError("Invalid symbol format")
 
-    params = {
-        'symbol': symbol
-    }
-
-    try:
-        response = requests.get(BASE_URL, headers=headers, params=params)
-        data = response.json()
-        return data['data'][symbol]
-    except requests.exceptions.RequestException as e:
-        print(f"Error retrieving data for {symbol}: {e}")
-        return None
-
-def get_crypto_prices():
-    crypto_data = []
-    for crypto_symbol in portfolio_cryptos:
-        crypto_info = get_crypto_data(crypto_symbol)
-        if crypto_info:
-            crypto_data.append(crypto_info)
-
-    response = ""
-    for crypto in crypto_data:
-        name = crypto['name']
-        symbol = crypto['symbol']
-        current_price = crypto['quote']['USD']['price']
-        percent_change_1h = crypto['quote']['USD']['percent_change_1h']
-        percent_change_24h = crypto['quote']['USD']['percent_change_24h']
-        percent_change_7d = crypto['quote']['USD']['percent_change_7d']
-        market_cap = crypto['quote']['USD']['market_cap']
-
-        response += f"{name} ({symbol}):\n"
-        response += f"Current Price: ${current_price:.2f}\n"
-        response += f"Percent Change (1 hour): {percent_change_1h:.2f}%\n"
-        response += f"Percent Change (24 hours): {percent_change_24h:.2f}%\n"
-        response += f"Percent Change (7 days): {percent_change_7d:.2f}%\n"
-        response += f"Market Cap: ${market_cap:.2f}\n\n"
-
-    return response
+            # Add rate limiting
+            response = requests.get(
+                f"https://api.example.com/v1/crypto/{symbol}",
+                timeout=5  # Add timeout
+            )
+            response.raise_for_status()
+            return response.json()['price']
+        except requests.RequestException as e:
+            logger.error(f"API request failed: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error getting crypto price: {e}")
+            return None
